@@ -1,0 +1,14 @@
+name: pipe-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pandas
+  - matplotlib
+  - scikit-learn
+  - seaborn
+  - ipykernel
+  - jupyterlab
+  - python
+  - autopep8
+prefix: /opt/anaconda3/envs/pipe-env
