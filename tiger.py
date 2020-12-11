@@ -3,6 +3,7 @@ import streamlit as st
 import re
 import pydeck as pdk
 import numpy as np
+import altair as alt
 
 def to_coords(coord_str):
     try:
@@ -45,8 +46,8 @@ def load_grants():
 applicants = load_applicants()
 grants = load_grants()
 
-lat_midpoint = grants['lat'].median()
-lon_midpoint = grants['lon'].median()
+# lat_midpoint = grants['lat'].median()
+# lon_midpoint = grants['lon'].median()
 
 min_grant, max_grant, med_grant = int(grants.Amount.min()), int(grants.Amount.max()), int(grants.Amount.median())
 
@@ -58,12 +59,22 @@ entity_list = st.sidebar.multiselect('Show Applications From:', options=applican
 filtered = applicants[applicants.State.isin(entity_list)]
 st.write(f'There are {len(filtered)} applications from the State(s) you selected. This represents {round(100*len(filtered)/len(applicants), 2)} percent of all applications.')
 
-# hist_values = np.histogram(filtered['Applicant Name'])
+show_variable = st.selectbox('Show Sum of Total:', options=['Funding Request', 'Project Cost'])
+hist_values = filtered.groupby(['State', 'Round']).agg('sum')[show_variable].reset_index()
+st.write(hist_values)
+alt_chart = alt.Chart(hist_values).mark_bar().encode(
+    x='State',
+    y=show_variable,
+    color='State',
+    column='Round:O'
+)
+st.subheader(f'Total {show_variable} by Year')
+st.altair_chart(alt_chart)
 
-st.subheader('Raw Data')
-st.write(applicants[applicants.State.isin(entity_list)])
+with st.beta_expander('Raw Data'):
+    st.write(applicants[applicants.State.isin(entity_list)])
 
-st.bar_chart(data=filtered['Applicant Name'].value_counts())
+# st.bar_chart(data=filtered['Applicant Name'].value_counts())
 
 # st.map(filtered)
 
