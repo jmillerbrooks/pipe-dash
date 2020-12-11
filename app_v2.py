@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 import re
 import pydeck as pdk
+import numpy as np
 
 def to_coords(coord_str):
     try:
@@ -26,6 +27,7 @@ def load_applicants():
     applicants['Round'] = applicants.Round.str[-4:].astype('int')
     applicants = clean_amount(applicants, col='Funding Request')
     applicants = clean_amount(applicants, col='Project Cost')
+    applicants['State'] = applicants.State.str.strip() 
     return applicants
 
 def load_grants():
@@ -50,34 +52,52 @@ min_grant, max_grant, med_grant = int(grants.Amount.min()), int(grants.Amount.ma
 
 
 st.title('TIGER Applicants and Awards')
-# st.subheader('Applicants')
-# st.write(applicants)
+st.subheader('Applicants')
+applicant_entities = list(applicants.State.unique())
+entity_list = st.sidebar.multiselect('Show Applications From:', options=applicant_entities)
+filtered = applicants[applicants.State.isin(entity_list)]
+st.write(f'There are {len(filtered)} applications from the State(s) you selected. This represents {round(100*len(filtered)/len(applicants), 2)} percent of all applications.')
+
+# hist_values = np.histogram(filtered['Applicant Name'])
+
+st.subheader('Raw Data')
+st.write(applicants[applicants.State.isin(entity_list)])
+
+st.bar_chart(data=filtered['Applicant Name'].value_counts())
+
+# st.map(filtered)
+
+
 # st.subheader('Grants Awarded')
 # st.write(grants)
 # min_grant_size = st.slider('Minimum Grant Size', min_grant, max_grant, med_grant)
 # n_grants = len(grants[grants.Amount >= min_grant_size])
-# st.write(f'{n_grants} grants awarded in amounts of at least {min_grant_size}')
+# prop_grants = round((1 - (n_grants/len(grants))) * 100, 2)
+# st.write(f'{n_grants} grants awarded in amounts of at least {min_grant_size}. {prop_grants} percent of all grants awarded were less than {min_grant_size}.')
 # st.subheader('Grants Awarded Map (Guam Excluded)')
 # st.map(grants[(grants.lon < 0) & (grants.Amount >= min_grant_size)])
-st.pydeck_chart(pdk.Deck(
-     map_style='mapbox://styles/mapbox/light-v9',
-     layers=[
-         pdk.Layer(
-            'HexagonLayer',
-            data=grants,
-            get_position='[lon, lat]',
-            radius=25000,
-            elevation_scale=50,
-            elevation_range=[0, 9000],
-            pickable=True,
-            extruded=True,
-         ),
-         pdk.Layer(
-             'ScatterplotLayer',
-             data=grants,
-             get_position='[lon, lat]',
-             get_color='[200, 30, 0, 160]',
-             get_radius=200,
-         ),
-     ],
- ))
+
+
+# st.map(applicants[(grants.lon < 0) & (grants.Amount >= min_grant_size)])
+# st.pydeck_chart(pdk.Deck(
+#      map_style='mapbox://styles/mapbox/light-v9',
+#      layers=[
+#          pdk.Layer(
+#             'HexagonLayer',
+#             data=grants,
+#             get_position='[lon, lat]',
+#             radius=25000,
+#             elevation_scale=5000,
+#             elevation_range=[0, 1000],
+#             pickable=True,
+#             extruded=True,
+#          ),
+#          pdk.Layer(
+#              'ScatterplotLayer',
+#              data=grants,
+#              get_position='[lon, lat]',
+#              get_color='[200, 30, 0, 160]',
+#              get_radius=200,
+#          ),
+#      ],
+#  ))
