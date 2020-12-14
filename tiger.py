@@ -50,12 +50,15 @@ grants = load_grants()
 # lon_midpoint = grants['lon'].median()
 
 min_grant, max_grant, med_grant = int(grants.Amount.min()), int(grants.Amount.max()), int(grants.Amount.median())
-
+min_app, max_app = int(applicants['Funding Request'].min()), int(applicants['Funding Request'].max())
+app_25, app_75 = int(applicants['Funding Request'].quantile(.25)), int(applicants['Funding Request'].quantile(.75))
 
 st.title('TIGER Applicants and Awards')
 st.subheader('Applicants')
 applicant_entities = list(applicants.State.unique())
-entity_list = st.sidebar.multiselect('Show Applications From:', options=applicant_entities)
+entity_list = st.sidebar.multiselect('Show Applications From:', options=applicant_entities, default=applicant_entities[0])
+grant_range = st.sidebar.slider('Select a Range of Values',
+                               min_app, max_app, (app_25, app_75))
 filtered = applicants[applicants.State.isin(entity_list)]
 st.write(f'There are {len(filtered)} applications from the State(s) you selected. This represents {round(100*len(filtered)/len(applicants), 2)} percent of all applications.')
 
