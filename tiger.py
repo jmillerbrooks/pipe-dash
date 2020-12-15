@@ -69,8 +69,8 @@ if app_or_grant == 'Applications':
 # st.map(filtered)
 
 elif app_or_grant == 'Grants':
-    st.title('Tiger Grants Awarded')
-    min_grant_size = st.slider('Minimum Grant Size', min_grant, max_grant, med_grant)
+    st.title('TIGER Grants Awarded')
+    min_grant_size = st.slider('Minimum Grant Size', min_grant, max_grant, med_grant, step=int((max_grant - min_grant)/100))
     n_grants = len(grants[grants.Amount >= min_grant_size])
     prop_grants = round((1 - (n_grants/len(grants))) * 100, 2)
     st.write(f'{n_grants} grants awarded in amounts of at least {min_grant_size}. {prop_grants} percent of all grants awarded were less than {min_grant_size}.')
